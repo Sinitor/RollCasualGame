@@ -18,9 +18,8 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private Transform path; 
 
     private Transform ball;
-    private Vector3 startMousePos, startBallPos;
     private bool moveTheBall;
-    private float velocity, camVelocityX, camVelocityY;
+    private float velocity;
     private Camera cam;
     private Rigidbody rb;
     private Collider col;
@@ -42,14 +41,6 @@ public class PlayerManager : MonoBehaviour
         {
             moveTheBall = true;
             ballTrialEffect.Play(); 
-            Plane newPlane = new Plane(Vector3.up, 0f);
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-
-            if (newPlane.Raycast(ray, out var distance))
-            {
-                startMousePos = ray.GetPoint(distance);
-                startBallPos = ball.position;
-            }
         }
         else if (Input.GetMouseButtonUp(0))
         {
@@ -57,16 +48,15 @@ public class PlayerManager : MonoBehaviour
         }
         if (moveTheBall)
         {
-            Plane newPlane = new Plane(Vector3.up, 0f);
+            Plane newPlane = new Plane(new Vector3(2,2,2),0f);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (newPlane.Raycast(ray, out var distance))
+            if (newPlane.Raycast(ray, out float distance))
             {
-                Vector3 mouseNewPos = ray.GetPoint(distance);
-                Vector3 desireBallPos = mouseNewPos + startBallPos;
+                Vector3 ballNewPos = ray.GetPoint(distance);
 
-                desireBallPos.x = Mathf.Clamp(desireBallPos.x, -1.5f, 1.5f);
+                ballNewPos.x = Mathf.Clamp(ballNewPos.x, -1.5f, 1.5f);
 
-                ball.position = new Vector3(Mathf.SmoothDamp(ball.position.x, desireBallPos.x, ref velocity, maxSpeed), ball.position.y, ball.position.z);
+                ball.position = new Vector3(Mathf.SmoothDamp(ball.position.x, ballNewPos.x, ref velocity, maxSpeed), ball.position.y, ball.position.z);
             }
         }
         if (MenuManager.menuManager.GameState)
@@ -75,20 +65,12 @@ public class PlayerManager : MonoBehaviour
             path.position = new Vector3(pathNewPos.x, pathNewPos.y, Mathf.MoveTowards(pathNewPos.z, -100000f, pathSpeed * Time.deltaTime));
         }
     }
-    private void LateUpdate()
-    {
-        var cameraNewPos = cam.transform.position;
-        if (rb.isKinematic)
-        {
-            cam.transform.position = new Vector3(Mathf.SmoothDamp(cameraNewPos.x, ball.transform.position.x, ref camVelocityX, camSpeed),
-                Mathf.SmoothDamp(cameraNewPos.y, ball.transform.position.y + 3f, ref camVelocityY, camSpeed), cameraNewPos.z);
-        }
-    }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Enemy"))
         {
+            MenuManager.score = 0;
             MenuManager.menuManager.GameState = false;
             var newParticale = Instantiate(dustEffect, transform.position, Quaternion.identity);
             newParticale.GetComponent<Renderer>().material = ballRenderer.material;

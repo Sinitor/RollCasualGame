@@ -1079,7 +1079,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 0.2
-  camSpeed: 0.3
+  camSpeed: 0.1
   pathSpeed: 10
   colliderParticale: {fileID: 1157089029283236740, guid: c456526d15b07f840a2ecf34072c2c6c, type: 3}
   airEffect: {fileID: 2104825694}
